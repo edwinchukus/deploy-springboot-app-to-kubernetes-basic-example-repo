@@ -7,4 +7,4 @@ Deploy with Kubernetes
 kubectl apply -f ./springboot-app/.
 ```
 
-Then visit the [http://127.0.0.1/swagger-ui.html](http://127.0.0.1/swagger-ui.html#/)
+Then visit this if this app is deployed locally [http://127.0.0.1/swagger-ui.html](http://127.0.0.1/swagger-ui.html#/)

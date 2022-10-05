@@ -17,7 +17,7 @@ spec:
       containers:
       - env:
         - name: SERVER_SERVLET_CONTEXT_PATH
-          value: ""
+          value: "/api"
         - name: SPRING_DATA_MONGODB_URI
           value: mongodb://mongoadmin:secret@mongo-service:27017/deltaStateGovtNg?authSource=admin&ssl=false
         name: springboot
