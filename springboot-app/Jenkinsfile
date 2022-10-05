@@ -1,0 +1,75 @@
+pipeline {
+    agent any
+
+   environment{
+        JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"
+        MAVEN_HOME="/usr/share/maven"
+        PATH="${PATH}:${JAVA_HOME}/bin:${MAVEN_HOME}/bin"
+        DOCKERHUB_CRED = "dockerHubRegistryCredential"
+        REGISTRY = "cendevops/election-registration"
+        DOCKER_IMAGE = ''
+   }
+    stages {
+//         stage('Build Election Application') {
+//             steps {
+//                 sh "mvn -f election-register-service/pom.xml clean package -Dmaven.test.skip=true"
+//             }
+//         }
+        stage('Run Unit for Election Application') {
+            steps {
+                sh "echo 'unit test'"
+                //sh "mvn -f election-register-service/pom.xml verify"
+            }
+        }
+        stage('Build Election Application Image') {
+            steps {
+                script{
+    //                 sh "docker build . -t cendevops/election-registration:1"
+                    DOCKER_IMAGE = docker.build REGISTRY + ":${BUILD_NUMBER}"
+                }
+            }
+        }
+        stage('Push Election Application to DockerHub Registry') {
+            steps {
+                script{
+                    docker.withRegistry('', DOCKERHUB_CRED) {
+                        //sh "docker tag ${REGISTRY}:${BUILD_NUMBER}"
+                        //sh "docker push ${REGISTRY}:${BUILD_NUMBER}"
+                        DOCKER_IMAGE.push("latest")
+                        DOCKER_IMAGE.push("${BUILD_NUMBER}")
+                    }
+                }
+            }
+        }
+        stage('Removing Election Application Image from Jenkins machine') {
+            steps {
+                sh "docker rmi -f ${REGISTRY}:${BUILD_NUMBER}"
+            }
+        }
+        stage('Deployment of Election Application to Digital Ocean') {
+            environment{
+                deploySpringBootApp = "kubectl apply -f ./springboot-app/."
+            }
+            steps {
+                sh """
+                    deploySpringBootApp
+                """
+            }
+        }
+
+    }
+    post{
+        always{
+            cleanWs()
+        }
+        success{
+            sh "echo 'Successful'"
+        }
+        failure{
+            sh "echo 'Failed '"
+        }
+        cleanup{
+            deleteDir()
+        }
+    }
+}
